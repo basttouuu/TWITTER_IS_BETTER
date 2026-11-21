@@ -48,7 +48,7 @@ func MainRouter(db *sql.DB) (http.Handler, error) {
 
 	assets, err := front.Assets()
 	if err != nil {
-		return nil, fmt.Errorf("load static assets: %w", err)
+		return nil, fmt.Errorf("chargement des fichiers statiques : %w", err)
 	}
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
 
@@ -74,7 +74,7 @@ func (s *Server) withUser(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := s.userFromRequest(r)
 		if err != nil {
-			log.Printf("load user session: %v", err)
+			log.Printf("chargement de la session utilisateur : %v", err)
 			http.Error(w, "Une erreur est survenue.", http.StatusInternalServerError)
 			return
 		}
@@ -117,7 +117,7 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		LIMIT 50`)
 	}
 	if err != nil {
-		log.Printf("load feed: %v", err)
+		log.Printf("chargement du fil : %v", err)
 		http.Error(w, "Impossible de charger le fil.", http.StatusInternalServerError)
 		return
 	}
@@ -125,14 +125,14 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var post Post
 		if err := rows.Scan(&post.Username, &post.Content, &post.CreatedAt); err != nil {
-			log.Printf("read feed item: %v", err)
+			log.Printf("lecture d'une publication : %v", err)
 			http.Error(w, "Impossible de charger le fil.", http.StatusInternalServerError)
 			return
 		}
 		data.Posts = append(data.Posts, post)
 	}
 	if err := rows.Err(); err != nil {
-		log.Printf("read feed: %v", err)
+		log.Printf("lecture du fil : %v", err)
 		http.Error(w, "Impossible de charger le fil.", http.StatusInternalServerError)
 		return
 	}
@@ -168,7 +168,7 @@ func (s *Server) createPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := s.db.ExecContext(r.Context(),
 		"INSERT INTO posts (user_id, content) VALUES (?, ?)", user.ID, content); err != nil {
-		log.Printf("create post for user %d: %v", user.ID, err)
+		log.Printf("création d'une publication pour l'utilisateur %d : %v", user.ID, err)
 		http.Error(w, "Impossible de publier pour le moment.", http.StatusInternalServerError)
 		return
 	}
@@ -186,7 +186,7 @@ func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) render(w http.ResponseWriter, name string, data pageData) {
 	if err := templates.RenderTemplate(w, name, data); err != nil {
-		log.Printf("render %s: %v", name, err)
+		log.Printf("affichage du modèle %s : %v", name, err)
 		http.Error(w, "Impossible d'afficher cette page.", http.StatusInternalServerError)
 	}
 }

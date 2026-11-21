@@ -22,7 +22,7 @@ func Open() (*sql.DB, error) {
 		rawURL = os.Getenv("DATABASE_URL")
 	}
 	if rawURL == "" {
-		return nil, fmt.Errorf("SCALINGO_MYSQL_URL (or MYSQL_URL / DATABASE_URL) is required")
+		return nil, fmt.Errorf("la variable SCALINGO_MYSQL_URL (ou MYSQL_URL / DATABASE_URL) est obligatoire")
 	}
 
 	dsn, err := toDSN(rawURL)
@@ -31,7 +31,7 @@ func Open() (*sql.DB, error) {
 	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("open MySQL connection: %w", err)
+		return nil, fmt.Errorf("ouverture de la connexion MySQL : %w", err)
 	}
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
@@ -41,7 +41,7 @@ func Open() (*sql.DB, error) {
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("connect to MySQL: %w", err)
+		return nil, fmt.Errorf("connexion à MySQL : %w", err)
 	}
 	return db, nil
 }
@@ -74,7 +74,7 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 	}
 	for _, statement := range statements {
 		if _, err := db.ExecContext(ctx, statement); err != nil {
-			return fmt.Errorf("create application tables: %w", err)
+			return fmt.Errorf("création des tables de l'application : %w", err)
 		}
 	}
 	return nil
@@ -84,7 +84,7 @@ func toDSN(raw string) (string, error) {
 	if !strings.Contains(raw, "://") {
 		config, err := mysql.ParseDSN(raw)
 		if err != nil {
-			return "", fmt.Errorf("invalid MySQL connection string")
+			return "", fmt.Errorf("chaîne de connexion MySQL invalide")
 		}
 		config.ParseTime = true
 		return config.FormatDSN(), nil
@@ -92,10 +92,10 @@ func toDSN(raw string) (string, error) {
 
 	parsed, err := url.Parse(raw)
 	if err != nil || parsed.Scheme != "mysql" {
-		return "", fmt.Errorf("invalid MySQL connection URL")
+		return "", fmt.Errorf("URL de connexion MySQL invalide")
 	}
 	if parsed.User == nil || parsed.Hostname() == "" || strings.Trim(parsed.Path, "/") == "" {
-		return "", fmt.Errorf("MySQL URL must include a username, host, and database name")
+		return "", fmt.Errorf("l'URL MySQL doit contenir un utilisateur, un hôte et un nom de base de données")
 	}
 
 	port := parsed.Port()
@@ -120,7 +120,7 @@ func toDSN(raw string) (string, error) {
 		switch strings.ToLower(key) {
 		case "tls", "ssl-mode":
 			if len(values) != 1 {
-				return "", fmt.Errorf("unsupported MySQL tls setting")
+				return "", fmt.Errorf("paramètre TLS MySQL non pris en charge")
 			}
 			switch strings.ToUpper(values[0]) {
 			case "TRUE", "REQUIRED":
@@ -134,37 +134,37 @@ func toDSN(raw string) (string, error) {
 			case "SKIP-VERIFY":
 				tlsSetting = "skip-verify"
 			default:
-				return "", fmt.Errorf("unsupported MySQL tls setting")
+				return "", fmt.Errorf("paramètre TLS MySQL non pris en charge")
 			}
 			delete(query, key)
 		case "usessl":
 			if len(values) != 1 {
-				return "", fmt.Errorf("unsupported MySQL useSSL setting")
+				return "", fmt.Errorf("paramètre useSSL MySQL non pris en charge")
 			}
 			useSSL = strings.ToLower(values[0])
 			if useSSL != "true" && useSSL != "false" {
-				return "", fmt.Errorf("unsupported MySQL useSSL setting")
+				return "", fmt.Errorf("paramètre useSSL MySQL non pris en charge")
 			}
 			delete(query, key)
 		case "verifyservercertificate":
 			if len(values) != 1 {
-				return "", fmt.Errorf("unsupported MySQL verifyServerCertificate setting")
+				return "", fmt.Errorf("paramètre verifyServerCertificate MySQL non pris en charge")
 			}
 			verifyServerCertificate = strings.ToLower(values[0])
 			if verifyServerCertificate != "true" && verifyServerCertificate != "false" {
-				return "", fmt.Errorf("unsupported MySQL verifyServerCertificate setting")
+				return "", fmt.Errorf("paramètre verifyServerCertificate MySQL non pris en charge")
 			}
 			delete(query, key)
 		default:
 			if len(values) != 1 {
-				return "", fmt.Errorf("invalid MySQL URL parameter %q", key)
+				return "", fmt.Errorf("paramètre %q invalide dans l'URL MySQL", key)
 			}
 			config.Params[key] = values[0]
 		}
 	}
 	if useSSL == "false" {
 		if tlsSetting != "" && tlsSetting != "false" {
-			return "", fmt.Errorf("conflicting MySQL TLS settings")
+			return "", fmt.Errorf("les paramètres TLS MySQL sont incompatibles")
 		}
 		tlsSetting = "false"
 	} else if useSSL == "true" && tlsSetting == "" {
@@ -174,7 +174,7 @@ func toDSN(raw string) (string, error) {
 		tlsSetting = "skip-verify"
 	} else if verifyServerCertificate == "true" {
 		if tlsSetting == "false" {
-			return "", fmt.Errorf("conflicting MySQL TLS settings")
+			return "", fmt.Errorf("les paramètres TLS MySQL sont incompatibles")
 		}
 		tlsSetting = "true"
 	}

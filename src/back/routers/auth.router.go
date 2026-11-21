@@ -61,14 +61,14 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	}
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("hash account password: %v", err)
+		log.Printf("hachage du mot de passe du compte : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
 
 	tx, err := s.db.BeginTx(r.Context(), nil)
 	if err != nil {
-		log.Printf("begin account registration: %v", err)
+		log.Printf("début de l'inscription du compte : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
@@ -83,24 +83,24 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 			s.render(w, "register.html", pageData{Error: "Ce pseudo ou cette adresse e-mail est déjà utilisé."})
 			return
 		}
-		log.Printf("create user: %v", err)
+		log.Printf("création de l'utilisateur : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
 	userID, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("read new user id: %v", err)
+		log.Printf("lecture de l'identifiant du nouvel utilisateur : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
 	token, err := insertSession(r.Context(), tx, userID)
 	if err != nil {
-		log.Printf("create account session: %v", err)
+		log.Printf("création de la session du compte : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
 	if err := tx.Commit(); err != nil {
-		log.Printf("save account: %v", err)
+		log.Printf("enregistrement du compte : %v", err)
 		http.Error(w, "Impossible de créer le compte pour le moment.", http.StatusInternalServerError)
 		return
 	}
@@ -138,7 +138,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		log.Printf("find login account: %v", err)
+		log.Printf("recherche du compte à connecter : %v", err)
 		http.Error(w, "Impossible de se connecter pour le moment.", http.StatusInternalServerError)
 		return
 	}
@@ -148,7 +148,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := insertSession(r.Context(), s.db, user.ID)
 	if err != nil {
-		log.Printf("create login session: %v", err)
+		log.Printf("création de la session de connexion : %v", err)
 		http.Error(w, "Impossible de se connecter pour le moment.", http.StatusInternalServerError)
 		return
 	}
@@ -163,7 +163,7 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	}
 	if cookie, err := r.Cookie(sessionCookieName); err == nil {
 		if _, err := s.db.ExecContext(r.Context(), "DELETE FROM sessions WHERE token_hash = ?", hashToken(cookie.Value)); err != nil {
-			log.Printf("delete session: %v", err)
+			log.Printf("suppression de la session : %v", err)
 			http.Error(w, "Impossible de fermer la session pour le moment.", http.StatusInternalServerError)
 			return
 		}
@@ -178,7 +178,7 @@ func (s *Server) userFromRequest(r *http.Request) (*User, error) {
 		if errors.Is(err, http.ErrNoCookie) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("read session cookie: %w", err)
+		return nil, fmt.Errorf("lecture du cookie de session : %w", err)
 	}
 
 	var user User
@@ -191,7 +191,7 @@ func (s *Server) userFromRequest(r *http.Request) (*User, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("query session: %w", err)
+		return nil, fmt.Errorf("recherche de la session : %w", err)
 	}
 	return &user, nil
 }
@@ -203,17 +203,17 @@ type sessionWriter interface {
 func insertSession(ctx context.Context, writer sessionWriter, userID int64) (string, error) {
 	var tokenBytes [32]byte
 	if _, err := rand.Read(tokenBytes[:]); err != nil {
-		return "", fmt.Errorf("generate session token: %w", err)
+		return "", fmt.Errorf("génération du jeton de session : %w", err)
 	}
 	token := hex.EncodeToString(tokenBytes[:])
 	_, err := writer.ExecContext(ctx,
 		"INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)",
 		hashToken(token), userID, time.Now().UTC().Add(sessionDuration))
 	if err != nil {
-		return "", fmt.Errorf("store session: %w", err)
+		return "", fmt.Errorf("enregistrement de la session : %w", err)
 	}
 	if _, err := writer.ExecContext(ctx, "DELETE FROM sessions WHERE expires_at < UTC_TIMESTAMP()"); err != nil {
-		return "", fmt.Errorf("remove expired sessions: %w", err)
+		return "", fmt.Errorf("suppression des sessions expirées : %w", err)
 	}
 	return token, nil
 }

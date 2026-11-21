@@ -21,11 +21,11 @@ func Load() error {
 		},
 	}).ParseFS(front.Templates(), "templates/*.html")
 	if err != nil {
-		return fmt.Errorf("parse page templates: %w", err)
+		return fmt.Errorf("analyse des modèles de page : %w", err)
 	}
 	parsed, err = parsed.ParseFS(front.Templates(), "templates/component/*.html")
 	if err != nil {
-		return fmt.Errorf("parse component templates: %w", err)
+		return fmt.Errorf("analyse des modèles de composants : %w", err)
 	}
 	listTemp = parsed
 	return nil
@@ -33,12 +33,12 @@ func Load() error {
 
 func RenderTemplate(w http.ResponseWriter, name string, data any) error {
 	if listTemp == nil {
-		return fmt.Errorf("templates have not been loaded")
+		return fmt.Errorf("les modèles n'ont pas été chargés")
 	}
 
 	var buffer bytes.Buffer
 	if err := listTemp.ExecuteTemplate(&buffer, name, data); err != nil {
-		return fmt.Errorf("execute %q template: %w", name, err)
+		return fmt.Errorf("exécution du modèle %q : %w", name, err)
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

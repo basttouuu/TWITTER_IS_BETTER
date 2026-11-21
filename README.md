@@ -1,13 +1,15 @@
 # Twitter is Better
 
-Application web Go de micro-publications, déployable sur Scalingo. Les comptes,
-les sessions et les publications sont stockés dans MySQL. Le fil public permet
-de rechercher les publications par texte ou par pseudo.
+Application web Go de micro-publications, déployable sur Scalingo. 
+Les comptes, les sessions et les publications sont stockés dans MySQL. 
+Le fil public permet de rechercher les publications par texte ou par pseudo.
+
+Lien du Site : https://twitterbtw.osc-fr1.scalingo.io
 
 ## Lancer en local
 
 1. Installer Go 1.25+ et démarrer un serveur MySQL.
-2. Définir l'URL MySQL dans le terminal, par exemple :
+2. Définir l'URL MySQL dans le terminal, par exemple (présent dans le .env.example):
 
 ```powershell
 $env:SCALINGO_MYSQL_URL = "mysql://user:password@localhost:3306/twitter?ssl-mode=DISABLED"
@@ -21,7 +23,7 @@ go run .
 ```
 
 Le serveur écoute sur `http://localhost:8080` (ou sur le port défini par
-`PORT`). Les tables `users`, `sessions` et `posts` sont créées au démarrage.
+`PORT` dans .env). Les tables `users`, `sessions` et `posts` sont créées au démarrage.
 
 ## Déployer sur Scalingo
 
