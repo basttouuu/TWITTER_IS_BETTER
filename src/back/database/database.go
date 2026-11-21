@@ -113,41 +113,73 @@ func toDSN(raw string) (string, error) {
 	config.Params = map[string]string{"charset": "utf8mb4"}
 
 	query := parsed.Query()
-	if mode := query.Get("ssl-mode"); mode != "" {
-		switch strings.ToUpper(mode) {
-		case "DISABLED":
-			query.Set("tls", "false")
-		case "PREFERRED":
-			query.Set("tls", "preferred")
-		case "REQUIRED", "VERIFY_CA", "VERIFY_IDENTITY":
-			query.Set("tls", "true")
-		default:
-			return "", fmt.Errorf("unsupported MySQL ssl-mode %q", mode)
-		}
-		query.Del("ssl-mode")
-	}
+	tlsSetting := ""
+	useSSL := ""
+	verifyServerCertificate := ""
 	for key, values := range query {
 		switch strings.ToLower(key) {
-		case "tls", "usessl":
+		case "tls", "ssl-mode":
 			if len(values) != 1 {
 				return "", fmt.Errorf("unsupported MySQL tls setting")
 			}
-			switch strings.ToLower(values[0]) {
-			case "true", "required":
-				config.TLSConfig = "true"
-			case "false", "disabled":
-				config.TLSConfig = "false"
-			case "preferred":
-				config.TLSConfig = "preferred"
+			switch strings.ToUpper(values[0]) {
+			case "TRUE", "REQUIRED":
+				tlsSetting = "true"
+			case "FALSE", "DISABLED":
+				tlsSetting = "false"
+			case "PREFERRED":
+				tlsSetting = "preferred"
+			case "VERIFY_CA", "VERIFY_IDENTITY":
+				tlsSetting = "true"
+			case "SKIP-VERIFY":
+				tlsSetting = "skip-verify"
 			default:
 				return "", fmt.Errorf("unsupported MySQL tls setting")
 			}
+			delete(query, key)
+		case "usessl":
+			if len(values) != 1 {
+				return "", fmt.Errorf("unsupported MySQL useSSL setting")
+			}
+			useSSL = strings.ToLower(values[0])
+			if useSSL != "true" && useSSL != "false" {
+				return "", fmt.Errorf("unsupported MySQL useSSL setting")
+			}
+			delete(query, key)
+		case "verifyservercertificate":
+			if len(values) != 1 {
+				return "", fmt.Errorf("unsupported MySQL verifyServerCertificate setting")
+			}
+			verifyServerCertificate = strings.ToLower(values[0])
+			if verifyServerCertificate != "true" && verifyServerCertificate != "false" {
+				return "", fmt.Errorf("unsupported MySQL verifyServerCertificate setting")
+			}
+			delete(query, key)
 		default:
 			if len(values) != 1 {
 				return "", fmt.Errorf("invalid MySQL URL parameter %q", key)
 			}
 			config.Params[key] = values[0]
 		}
+	}
+	if useSSL == "false" {
+		if tlsSetting != "" && tlsSetting != "false" {
+			return "", fmt.Errorf("conflicting MySQL TLS settings")
+		}
+		tlsSetting = "false"
+	} else if useSSL == "true" && tlsSetting == "" {
+		tlsSetting = "true"
+	}
+	if verifyServerCertificate == "false" && tlsSetting != "false" {
+		tlsSetting = "skip-verify"
+	} else if verifyServerCertificate == "true" {
+		if tlsSetting == "false" {
+			return "", fmt.Errorf("conflicting MySQL TLS settings")
+		}
+		tlsSetting = "true"
+	}
+	if tlsSetting != "" {
+		config.TLSConfig = tlsSetting
 	}
 	return config.FormatDSN(), nil
 }

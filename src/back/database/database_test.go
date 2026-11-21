@@ -29,10 +29,12 @@ func TestToDSNMapsUseSSLToDriverTLS(t *testing.T) {
 		value string
 		want  string
 	}{
-		{value: "true", want: "true"},
-		{value: "false", want: "false"},
+		{value: "useSSL=true", want: "true"},
+		{value: "useSSL=false", want: "false"},
+		{value: "useSSL=true&verifyServerCertificate=false", want: "skip-verify"},
+		{value: "useSSL=true&verifyServerCertificate=true", want: "true"},
 	} {
-		dsn, err := toDSN("mysql://app:secret@db.example.com/twitter?useSSL=" + test.value)
+		dsn, err := toDSN("mysql://app:secret@db.example.com/twitter?" + test.value)
 		if err != nil {
 			t.Fatal(err)
 		}
