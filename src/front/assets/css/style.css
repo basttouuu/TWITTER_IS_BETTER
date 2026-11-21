@@ -114,10 +114,11 @@ a:hover {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(190px, 250px) minmax(0, 600px) minmax(190px, 270px);
+  grid-template-columns: minmax(0, 680px) minmax(220px, 280px);
   align-items: start;
   gap: 22px;
-  max-width: 1240px;
+  justify-content: center;
+  max-width: 1060px;
   margin: 28px auto;
   padding: 0 24px;
 }
@@ -128,49 +129,6 @@ a:hover {
   border-radius: 16px;
   background: var(--paper);
   box-shadow: 0 2px 8px rgba(23, 33, 43, 0.025);
-}
-
-.profile-card {
-  position: sticky;
-  top: 88px;
-}
-
-.profile-cover {
-  height: 76px;
-  background: linear-gradient(120deg, #1d9bf0, #8ad2f5);
-}
-
-.profile-details {
-  padding: 0 18px 18px;
-}
-
-.profile-details .avatar {
-  margin-top: -22px;
-  border: 4px solid white;
-}
-
-.profile-details h1 {
-  margin: 10px 0 0;
-  font-size: 18px;
-  overflow-wrap: anywhere;
-}
-
-.profile-details p {
-  margin: 0 0 14px;
-  font-size: 13px;
-}
-
-.profile-stats {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid var(--line);
-  padding: 13px 18px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.profile-stats strong {
-  color: var(--blue-dark);
 }
 
 .avatar {
@@ -184,12 +142,6 @@ a:hover {
   color: #1677b8;
   font-size: 17px;
   font-weight: 700;
-}
-
-.avatar-large {
-  width: 58px;
-  height: 58px;
-  font-size: 22px;
 }
 
 .feed {
@@ -309,8 +261,7 @@ a:hover {
   padding: 22px 4px 8px;
 }
 
-.feed-heading h2,
-.side-card h2 {
+.feed-heading h2 {
   margin: 0;
   font-size: 17px;
 }
@@ -364,11 +315,36 @@ a:hover {
   top: 88px;
 }
 
-.side-card {
+.search-card {
   padding: 18px;
 }
 
-.side-card p,
+.search-card h2 {
+  margin: 0 0 14px;
+  font-size: 16px;
+}
+
+.post-search {
+  display: grid;
+  gap: 10px;
+}
+
+.post-search input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd6dd;
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+}
+
+.post-search input:focus {
+  outline: 2px solid rgba(29, 155, 240, 0.25);
+  outline-offset: 2px;
+}
+
 .site-footer {
   color: var(--muted);
   font-size: 13px;
@@ -466,9 +442,6 @@ a:hover {
     justify-content: center;
   }
 
-  .profile-card {
-    display: none;
-  }
 }
 
 @media (max-width: 680px) {

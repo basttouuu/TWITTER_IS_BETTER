@@ -1,7 +1,8 @@
 # Twitter is Better
 
 Application web Go de micro-publications, déployable sur Scalingo. Les comptes,
-les sessions et les publications sont stockés dans MySQL.
+les sessions et les publications sont stockés dans MySQL. Le fil public permet
+de rechercher les publications par texte ou par pseudo.
 
 ## Lancer en local
 

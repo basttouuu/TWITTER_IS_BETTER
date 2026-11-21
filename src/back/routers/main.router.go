@@ -35,6 +35,7 @@ type pageData struct {
 	User  *User
 	Posts []Post
 	Error string
+	Query string
 }
 
 type Server struct {
@@ -58,6 +59,9 @@ func MainRouter(db *sql.DB) (http.Handler, error) {
 	router.HandleFunc("POST /login", server.login)
 	router.HandleFunc("POST /logout", server.withUser(server.logout))
 	router.HandleFunc("POST /posts", server.withUser(server.createPost))
+	router.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	router.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
@@ -89,12 +93,29 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		s.notFound(w, r)
 		return
 	}
-	data := pageData{User: userFromContext(r)}
-	rows, err := s.db.QueryContext(r.Context(), `
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
+	if utf8.RuneCountInString(query) > 100 {
+		http.Error(w, "La recherche ne peut pas dépasser 100 caractères.", http.StatusBadRequest)
+		return
+	}
+	data := pageData{User: userFromContext(r), Query: query}
+	searchPattern := "%" + escapeLike(query) + "%"
+	var rows *sql.Rows
+	var err error
+	if query != "" {
+		rows, err = s.db.QueryContext(r.Context(), `
+		SELECT users.username, posts.content, posts.created_at
+		FROM posts JOIN users ON users.id = posts.user_id
+		WHERE posts.content LIKE ? ESCAPE '!' OR users.username LIKE ? ESCAPE '!'
+		ORDER BY posts.created_at DESC, posts.id DESC
+		LIMIT 50`, searchPattern, searchPattern)
+	} else {
+		rows, err = s.db.QueryContext(r.Context(), `
 		SELECT users.username, posts.content, posts.created_at
 		FROM posts JOIN users ON users.id = posts.user_id
 		ORDER BY posts.created_at DESC, posts.id DESC
 		LIMIT 50`)
+	}
 	if err != nil {
 		log.Printf("load feed: %v", err)
 		http.Error(w, "Impossible de charger le fil.", http.StatusInternalServerError)
@@ -116,6 +137,10 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.render(w, "home.html", data)
+}
+
+func escapeLike(value string) string {
+	return strings.NewReplacer("!", "!!", "%", "!%", "_", "!_").Replace(value)
 }
 
 func (s *Server) createPost(w http.ResponseWriter, r *http.Request) {

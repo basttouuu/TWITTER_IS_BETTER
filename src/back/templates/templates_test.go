@@ -21,6 +21,7 @@ type templatePage struct {
 	User  *templateUser
 	Posts []templatePost
 	Error string
+	Query string
 }
 
 func TestLoadAndRenderPages(t *testing.T) {

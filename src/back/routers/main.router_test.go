@@ -32,6 +32,7 @@ func TestRouterServesEmbeddedPagesAndAssets(t *testing.T) {
 	}{
 		{path: "/register", statusCode: http.StatusOK, contains: "Créer un compte"},
 		{path: "/static/css/style.css", statusCode: http.StatusOK, contains: "--blue:"},
+		{path: "/health", statusCode: http.StatusOK},
 		{path: "/healthz", statusCode: http.StatusNoContent},
 	} {
 		t.Run(test.path, func(t *testing.T) {
@@ -44,5 +45,11 @@ func TestRouterServesEmbeddedPagesAndAssets(t *testing.T) {
 				t.Fatalf("response does not contain %q", test.contains)
 			}
 		})
+	}
+}
+
+func TestEscapeLikeTreatsWildcardsLiterally(t *testing.T) {
+	if got, want := escapeLike("100%_ready!"), "100!%!_ready!!"; got != want {
+		t.Fatalf("escapeLike() = %q, want %q", got, want)
 	}
 }

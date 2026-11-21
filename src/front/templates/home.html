@@ -11,28 +11,6 @@
 <body>
   {{template "header.html" .}}
   <main class="layout">
-    <aside class="profile-card card">
-      {{if .User}}
-        <div class="profile-cover"></div>
-        <div class="profile-details">
-          <div class="avatar avatar-large">{{initial .User.Username}}</div>
-          <h1>{{.User.Username}}</h1>
-          <p class="muted">@{{.User.Username}}</p>
-        </div>
-      {{else}}
-        <div class="profile-cover"></div>
-        <div class="profile-details">
-          <h1>Bienvenue sur Twitter is Better</h1>
-          <p class="muted">Un fil de discussion simple, pour partager vos idées.</p>
-          <a class="button button-primary button-wide" href="/register">Créer un compte</a>
-        </div>
-      {{end}}
-      <div class="profile-stats">
-        <span>Publications</span>
-        <strong>{{len .Posts}}</strong>
-      </div>
-    </aside>
-
     <section class="feed" aria-label="Fil d'actualité">
       {{if .User}}
         <div class="composer card">
@@ -60,7 +38,11 @@
       {{end}}
 
       <div class="feed-heading">
-        <h2>Les dernières publications</h2>
+        {{if .Query}}
+          <h2>Résultats pour « {{.Query}} »</h2>
+        {{else}}
+          <h2>Les dernières publications</h2>
+        {{end}}
       </div>
       {{if .Posts}}
         {{range .Posts}}
@@ -77,16 +59,25 @@
         {{end}}
       {{else}}
         <div class="empty-state card">
-          <h3>Le fil est encore calme.</h3>
-          <p class="muted">{{if .User}}Soyez la première personne à publier un message.{{else}}Connectez-vous pour découvrir et partager des publications.{{end}}</p>
+          {{if .Query}}
+            <h3>Aucun résultat.</h3>
+            <p class="muted">Aucune publication ne correspond à cette recherche.</p>
+          {{else}}
+            <h3>Le fil est encore calme.</h3>
+            <p class="muted">{{if .User}}Soyez la première personne à publier un message.{{else}}Connectez-vous pour découvrir et partager des publications.{{end}}</p>
+          {{end}}
         </div>
       {{end}}
     </section>
 
     <aside class="right-column">
-      <div class="card side-card">
-        <h2>À propos</h2>
-        <p>Twitter is Better est un espace de discussion construit pour le projet Scalingo.</p>
+      <div class="card search-card">
+        <h2>Rechercher dans les publications</h2>
+        <form class="post-search" action="/" method="get" role="search">
+          <label class="sr-only" for="search-query">Mot-clé ou pseudo</label>
+          <input id="search-query" name="q" type="search" maxlength="100" placeholder="Mot-clé ou pseudo" value="{{.Query}}">
+          <button class="button button-primary" type="submit">Rechercher</button>
+        </form>
       </div>
       {{template "footer.html" .}}
     </aside>
