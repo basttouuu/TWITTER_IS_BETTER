@@ -1,0 +1,22 @@
+{{define "error.html"}}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page introuvable · Twitter is Better</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="auth-page">
+  {{template "header.html" .}}
+  <main class="auth-wrap">
+    <section class="auth-card card empty-state">
+      <p class="eyebrow">Erreur 404</p>
+      <h1>Cette page n'existe pas.</h1>
+      <p class="muted">Vérifiez l'adresse ou retournez à l'accueil.</p>
+      <a class="button button-primary" href="/">Retour à l'accueil</a>
+    </section>
+  </main>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,30 @@
+{{define "login.html"}}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion · Twitter is Better</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="auth-page">
+  {{template "header.html" .}}
+  <main class="auth-wrap">
+    <section class="auth-card card">
+      <p class="eyebrow">Content de vous revoir</p>
+      <h1>Connectez-vous</h1>
+      <p class="muted">Retrouvez votre fil et partagez vos idées.</p>
+      {{if .Error}}<p class="form-error" role="alert">{{.Error}}</p>{{end}}
+      <form class="auth-form" action="/login" method="post">
+        <label for="identifier">Pseudo ou adresse e-mail</label>
+        <input id="identifier" name="identifier" type="text" autocomplete="username" required>
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button button-primary button-wide" type="submit">Se connecter</button>
+      </form>
+      <p class="auth-switch">Pas encore de compte ? <a href="/register">Inscrivez-vous</a></p>
+    </section>
+  </main>
+</body>
+</html>
+{{end}}

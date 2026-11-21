@@ -1,0 +1,4 @@
+.env
+twitter
+*.exe
+*.test

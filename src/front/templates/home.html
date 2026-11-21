@@ -1,0 +1,96 @@
+{{define "home.html"}}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8fa">
+  <title>Accueil · Twitter is Better</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  {{template "header.html" .}}
+  <main class="layout">
+    <aside class="profile-card card">
+      {{if .User}}
+        <div class="profile-cover"></div>
+        <div class="profile-details">
+          <div class="avatar avatar-large">{{initial .User.Username}}</div>
+          <h1>{{.User.Username}}</h1>
+          <p class="muted">@{{.User.Username}}</p>
+        </div>
+      {{else}}
+        <div class="profile-cover"></div>
+        <div class="profile-details">
+          <h1>Bienvenue sur Twitter is Better</h1>
+          <p class="muted">Un fil de discussion simple, pour partager vos idées.</p>
+          <a class="button button-primary button-wide" href="/register">Créer un compte</a>
+        </div>
+      {{end}}
+      <div class="profile-stats">
+        <span>Publications</span>
+        <strong>{{len .Posts}}</strong>
+      </div>
+    </aside>
+
+    <section class="feed" aria-label="Fil d'actualité">
+      {{if .User}}
+        <div class="composer card">
+          <div class="avatar">{{initial .User.Username}}</div>
+          <form action="/posts" method="post">
+            <label class="sr-only" for="content">Votre publication</label>
+            <textarea id="content" name="content" maxlength="280" placeholder="Quoi de neuf ?" required></textarea>
+            {{if .Error}}<p class="form-error" role="alert">{{.Error}}</p>{{end}}
+            <div class="composer-actions">
+              <span class="muted">280 caractères maximum</span>
+              <button class="button button-primary" type="submit">Publier</button>
+            </div>
+          </form>
+        </div>
+      {{else}}
+        <section class="welcome card">
+          <p class="eyebrow">Le fil qui vous ressemble</p>
+          <h1>Les idées circulent mieux ensemble.</h1>
+          <p>Créez un compte pour publier vos messages et retrouver les dernières publications de la communauté.</p>
+          <div class="welcome-actions">
+            <a class="button button-primary" href="/register">Créer mon compte</a>
+            <a class="button button-secondary" href="/login">Se connecter</a>
+          </div>
+        </section>
+      {{end}}
+
+      <div class="feed-heading">
+        <h2>Les dernières publications</h2>
+      </div>
+      {{if .Posts}}
+        {{range .Posts}}
+          <article class="post card">
+            <div class="avatar">{{initial .Username}}</div>
+            <div class="post-body">
+              <div class="post-meta">
+                <strong>{{.Username}}</strong>
+                <span class="muted">@{{.Username}} · {{.CreatedAt.Format "02/01/2006 à 15:04"}}</span>
+              </div>
+              <p class="post-content">{{.Content}}</p>
+            </div>
+          </article>
+        {{end}}
+      {{else}}
+        <div class="empty-state card">
+          <h3>Le fil est encore calme.</h3>
+          <p class="muted">{{if .User}}Soyez la première personne à publier un message.{{else}}Connectez-vous pour découvrir et partager des publications.{{end}}</p>
+        </div>
+      {{end}}
+    </section>
+
+    <aside class="right-column">
+      <div class="card side-card">
+        <h2>À propos</h2>
+        <p>Twitter is Better est un espace de discussion construit pour le projet Scalingo.</p>
+      </div>
+      {{template "footer.html" .}}
+    </aside>
+  </main>
+</body>
+</html>
+{{end}}

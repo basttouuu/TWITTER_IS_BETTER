@@ -1,0 +1,22 @@
+{{define "header.html"}}
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="Twitter is Better, accueil">
+      <span class="brand-mark" aria-hidden="true">t</span>
+      <span>twitter <strong>is better</strong></span>
+    </a>
+    <nav class="main-nav" aria-label="Navigation principale">
+      <a href="/">Accueil</a>
+      {{if .User}}
+        <span class="nav-user">@{{.User.Username}}</span>
+        <form action="/logout" method="post">
+          <button class="nav-link" type="submit">Déconnexion</button>
+        </form>
+      {{else}}
+        <a href="/login">Connexion</a>
+        <a class="nav-signup" href="/register">Créer un compte</a>
+      {{end}}
+    </nav>
+  </div>
+</header>
+{{end}}
