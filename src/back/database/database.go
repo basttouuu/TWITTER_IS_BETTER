@@ -127,12 +127,21 @@ func toDSN(raw string) (string, error) {
 		query.Del("ssl-mode")
 	}
 	for key, values := range query {
-		switch key {
-		case "tls":
-			if len(values) != 1 || (values[0] != "true" && values[0] != "false" && values[0] != "preferred") {
+		switch strings.ToLower(key) {
+		case "tls", "usessl":
+			if len(values) != 1 {
 				return "", fmt.Errorf("unsupported MySQL tls setting")
 			}
-			config.TLSConfig = values[0]
+			switch strings.ToLower(values[0]) {
+			case "true", "required":
+				config.TLSConfig = "true"
+			case "false", "disabled":
+				config.TLSConfig = "false"
+			case "preferred":
+				config.TLSConfig = "preferred"
+			default:
+				return "", fmt.Errorf("unsupported MySQL tls setting")
+			}
 		default:
 			if len(values) != 1 {
 				return "", fmt.Errorf("invalid MySQL URL parameter %q", key)

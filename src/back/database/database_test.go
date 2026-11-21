@@ -24,6 +24,31 @@ func TestToDSNFromScalingoURL(t *testing.T) {
 	}
 }
 
+func TestToDSNMapsUseSSLToDriverTLS(t *testing.T) {
+	for _, test := range []struct {
+		value string
+		want  string
+	}{
+		{value: "true", want: "true"},
+		{value: "false", want: "false"},
+	} {
+		dsn, err := toDSN("mysql://app:secret@db.example.com/twitter?useSSL=" + test.value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		config, err := mysql.ParseDSN(dsn)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if config.TLSConfig != test.want {
+			t.Errorf("TLSConfig = %q, want %q", config.TLSConfig, test.want)
+		}
+		if _, ok := config.Params["useSSL"]; ok {
+			t.Error("useSSL was forwarded to MySQL as a system variable")
+		}
+	}
+}
+
 func TestToDSNRejectsInvalidURLs(t *testing.T) {
 	for _, input := range []string{
 		"postgres://app:secret@db.example.com/twitter",
